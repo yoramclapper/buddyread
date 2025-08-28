@@ -1,0 +1,19 @@
+{% extends "core/index.html" %}
+
+{% block content %}
+<div class="card m-5">
+  <div class="card-body">
+    <div class="list-group">
+        {% for book in books %}
+        <a href="#" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ book.title }}</h5>
+          <small>Start op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
+        </div>
+        <p class="mb-1">{{ book.author }}</p>
+        </a>
+        {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

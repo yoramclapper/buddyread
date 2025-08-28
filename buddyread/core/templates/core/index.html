@@ -6,8 +6,19 @@
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    {% load static %}
 </head>
 <body>
-HI!
+
+<header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+  <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+    <img src="{% static 'images/buddyread_logo.png' %}" alt="Buddyread Logo" width="80" height="64" class="me-2">
+      <span class="fs-4">Buddyread</span>
+  </a>
+</header>
+
+{% block content %}
+{% endblock %}
+
 </body>
 </html>

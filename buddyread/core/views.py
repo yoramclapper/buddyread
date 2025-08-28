@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
 
 def index(request):
-    return render(request, "core/index.html")
+    # Redirects to the URL named "books" in the "books" app
+    return redirect("books")
