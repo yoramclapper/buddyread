@@ -5,15 +5,27 @@
   <div class="card-body">
     <div class="list-group">
         {% for book in books %}
-        <a href="#" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
-        <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-1">{{ book.title }}</h5>
-          <small>Start op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
-        </div>
-        <p class="mb-1">{{ book.author }}</p>
-        </a>
+            <a href="#" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">{{ book.title }}</h5>
+                  <small>Start op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
+                </div>
+                <p class="mb-1">{{ book.author }}</p>
+                {% if book.review_set.all %}
+                <div class="mt-2 {% if forloop.counter == 1 %}text-white{% else %}text-muted{% endif %}">
+                    <small class="d-block mb-1">Reviews:</small>
+                    <div class="ps-2">
+                        {% for review in book.review_set.all %}
+                            <p class="mb-1 small">
+                                <strong>{{ review.user.username }}</strong>: {{ review.score }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </a>
         {% endfor %}
-    </div>
+        </div>
   </div>
 </div>
 {% endblock %}

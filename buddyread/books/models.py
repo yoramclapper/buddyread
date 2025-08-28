@@ -13,6 +13,7 @@ class Book(models.Model):
 
 class Review(models.Model):
     SCORES = [
+        ('DNF', 'DNF'),
         ('1', '1'),
         ('1.5', '1.5'),
         ('2', '2'),
@@ -31,4 +32,6 @@ class Review(models.Model):
         null=False,
         choices=SCORES
     )
-    comment = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.book.title} - {self.user.username}"
