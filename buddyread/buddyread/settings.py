@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
     'books.apps.BooksConfig',
+    'core.apps.CoreConfig',
 ]
 
 
