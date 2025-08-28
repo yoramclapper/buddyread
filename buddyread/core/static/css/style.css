@@ -1,0 +1,17 @@
+body {
+    background-color: #a8e6f0;
+}
+
+header {
+    background-color: #f0f8ff;
+}
+
+.card {
+    background-color: #f0f8ff; /* light blue example */
+}
+
+.list-group-item.active {
+    background-color: #FF7F50; /* example: blue */
+    color: white; /* text color */
+    border-color: #0056b3; /* optional: darker border */
+}
