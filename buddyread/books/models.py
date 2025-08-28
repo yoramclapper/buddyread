@@ -1,31 +1,31 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
-# class Author(models.Model):
-#     name = models.CharField(max_length=255, blank=False, null=False)
-#
-#
-# class Book(models.Model):
-#     title = models.CharField(max_length=255, blank=False, null=False)
-#     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-#     pages = models.PositiveIntegerField(blank=True, null=True)
-#
-#
-# class Status(models.Model):
-#     STATUS_CHOICES = (
-#         ('P', 'In progress'),
-#         ('F', 'Finished'),
-#         ('D', 'DNF'),
-#         ('W', 'Wishlist'),
-#     )
-#
-#     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-#     start_date = models.DateField(blank=False, null=False)
-#     current_status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-#
-#
-# class Review(models.Model):
-#     # user (https://www.geeksforgeeks.org/python/how-to-use-user-model-in-django/)
-#     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-#     score = models.PositiveIntegerField(blank=False, null=False)
-#     comment = models.TextField()
+class Book(models.Model):
+    title = models.CharField(max_length=255, blank=False, null=False)
+    author = models.CharField(max_length=255, blank=False, null=False)
+    creation_date = models.DateField(auto_now_add=True)
+
+
+class Review(models.Model):
+    SCORES = [
+        ('1', '1'),
+        ('1.5', '1.5'),
+        ('2', '2'),
+        ('2.5', '2.5'),
+        ('3', '3'),
+        ('3.5', '3.5'),
+        ('4', '4'),
+        ('4.5', '4.5'),
+        ('5', '5'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    score = models.CharField(
+        max_length=3,
+        blank=False,
+        null=False,
+        choices=SCORES
+    )
+    comment = models.CharField(max_length=255, blank=True, null=True)
