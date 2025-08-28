@@ -1,0 +1,12 @@
+from django import forms
+from .models import Review
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["user", "score", "comment"]
+        labels = {
+            "user": "Reviewer",
+            "score": "Score",
+            "comment": "Commentaar"
+        }

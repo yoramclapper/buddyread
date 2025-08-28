@@ -1,0 +1,12 @@
+{% extends "core/index.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="card m-5">
+    <div class="card-body">
+        <h3 class="mb-3">{{ book.title }}</h3>
+        {% crispy form %}
+        <button type="submit" class="btn btn-primary">Opslaan</button>
+    </div>
+</div>
+{% endblock %}

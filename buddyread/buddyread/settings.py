@@ -47,8 +47,12 @@ CORE_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    'bootstrap5'
+    'bootstrap5',
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 INSTALLED_APPS = LOCAL_APPS + CORE_APPS + THIRD_PARTY_APPS
 
