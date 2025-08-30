@@ -1,4 +1,5 @@
 {% extends "core/index.html" %}
+{% load review_tags %}
 
 {% block content %}
 <div class="card m-5">
@@ -20,7 +21,7 @@
                     <div class="ps-2">
                         {% for review in book.review_set.all %}
                             <p class="mb-1 small">
-                                <strong>{{ review.user.username }}</strong>: {{ review.score }}<br>
+                                <strong>{{ review.user.username }}</strong>: {{ review.score|stars }}<br>
                                 <span class="fst-italic">{{ review.comment|default:"" }}</span>
                             </p>
                         {% endfor %}
