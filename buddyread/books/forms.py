@@ -1,7 +1,22 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
-from .models import Review
+from .models import Book, Review
+
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ["title", "author"]
+        labels = {
+            "title": "Titel",
+            "author": "Auteur"
+        }
+
+    helper = FormHelper()
+    helper.add_input(Submit('submit', 'Opslaan', css_class='btn-primary'))
+    helper.form_method = 'POST'
+
 
 class ReviewForm(forms.ModelForm):
     class Meta:

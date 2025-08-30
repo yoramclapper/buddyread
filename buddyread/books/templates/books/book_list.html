@@ -2,6 +2,9 @@
 
 {% block content %}
 <div class="card m-5">
+    <div class="card-header">
+        <a class="btn btn-success" href="{% url 'add_book' %}" role="button"><i class="bi bi-book-half"></i> <i class="bi bi-plus-square"></i></a>
+    </div>
     <div class="card-body">
         <div class="list-group">
             {% for book in books %}
