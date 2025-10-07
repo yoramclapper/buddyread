@@ -92,12 +92,13 @@ WSGI_APPLICATION = 'buddyread.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DATABASE'),
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'),
-        'PORT': config('PORT'),
+        # 'ENGINE': 'django.db.backends.mysql', -- use for mariadb
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('POSTGRESQL_DATABASE'),
+        'USER': config('POSTGRESQL_USER'),
+        'PASSWORD': config('POSTGRESQL_PASSWORD'),
+        'HOST': config('POSTGRESQL_HOST'),
+        'PORT': config('POSTGRESQL_PORT'),
     }
 }
 
