@@ -93,11 +93,11 @@ WSGI_APPLICATION = 'buddyread.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DATABASE'),
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'),
-        'PORT': config('PORT'),
+        'NAME': config('MDB_DATABASE'),
+        'USER': config('MDB_USER'),
+        'PASSWORD': config('MDB_PASSWORD'),
+        'HOST': config('MDB_HOST'),
+        'PORT': config('MDB_PORT'),
     }
 }
 
