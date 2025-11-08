@@ -12,7 +12,7 @@
             <a href="{% url 'review' book.pk %}" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
                   <h5 class="mb-1">{{ book.title }} ({{ book.selected_by}}'s keuze)</h5>
-                  <small>Start op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
+                  <small>Toegevoegd op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
                 </div>
                 <p class="mb-1">{{ book.author }}</p>
                 {% if book.review_set.all %}
