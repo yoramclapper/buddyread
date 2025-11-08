@@ -10,6 +10,7 @@ class BookClubMembersInline(admin.TabularInline):
 
 @admin.register(BookClub)
 class BookClubAdmin(admin.ModelAdmin):
-    list_display = ('naam', 'creation_date')
+    exclude = ('slug', 'end_date')
+    list_display = ('name', 'creation_date')
     inlines = [BookClubMembersInline]
 

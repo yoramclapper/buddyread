@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 
 
 class Book(models.Model):
@@ -43,12 +44,17 @@ class Review(models.Model):
 
 
 class BookClub(models.Model):
-    naam = models.CharField(max_length=255, null=False, blank=False)
+    slug = models.SlugField(primary_key=True, max_length=50, null=False, blank=False)
+    name = models.CharField(unique=True, max_length=50, null=False, blank=False)
     creation_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.naam}"
+        return f"{self.name}"
 
 
 class BookClubMembers(models.Model):
