@@ -72,3 +72,6 @@ class BookClubBooks(models.Model):
     class Meta:
         verbose_name_plural = "Book club books"
 
+    def get_books(self):
+        return Book.objects.filter(bookclubbooks__book_club=self.book_club).order_by("-creation_date")
+

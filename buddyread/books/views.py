@@ -1,28 +1,38 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Book, Review
-from .forms import BookForm, ReviewForm
+from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
+from .forms import BookForm, ReviewForm, BookClubForm
 
 @login_required
-def books(request):
-    book_qs = Book.objects.order_by("-creation_date")
-    context = {"books": book_qs}
+def books(request, club):
+    book_club = BookClub.objects.get(slug=club)
+    book_club_books = BookClubBooks.objects.filter(book_club=book_club)
+    if not book_club_books.exists():
+        return redirect("add_book", club=club)
+
+    book_qs = book_club_books.first().get_books()
+    context = {"books": book_qs, "club": club}
     return render(request, "books/book_list.html", context)
 
 
 @login_required
-def add_book(request):
+def add_book(request, club):
     if request.method == "POST":
         form = BookForm(request.POST)
         if form.is_valid():
             title = form.cleaned_data['title']
             author = form.cleaned_data['author']
-            Book.objects.create(
+            book = Book.objects.create(
                 title=title,
                 author=author,
                 selected_by=request.user,
             )
-            return redirect('books')
+            book_club = BookClub.objects.get(slug=club)
+            BookClubBooks.objects.create(
+                book_club=book_club,
+                book=book
+            )
+            return redirect('books', club=club)
     else:
         form = BookForm()
     context = {'form': form}
@@ -58,3 +68,18 @@ def review(request, book_pk):
             form = ReviewForm(initial=initial_data)
     context = {'book': book, 'form': form}
     return render(request, "books/review_form.html", context)
+
+
+@login_required
+def add_club(request):
+    if request.method == "POST":
+        form = BookClubForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            book_club = BookClub.objects.create(name=name)
+            BookClubMembers.objects.create(book_club=book_club, member=request.user)
+            return redirect('/')
+    else:
+        form = BookClubForm()
+    context = {'form': form}
+    return render(request, "books/add_club.html", context)
