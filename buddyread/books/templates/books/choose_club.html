@@ -1,0 +1,20 @@
+{% extends "core/index.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="card m-5">
+    <div class="card-body">
+        <h3 class="mb-3">Er zijn meerdere boekenclubs waarvan u lid bent</h3>
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Kies een boeken club
+            </button>
+            <ul class="dropdown-menu">
+                {% for club in book_clubs %}
+                    <li><a class="dropdown-item" href="{% url 'books' club=club.slug %}">{{ club.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

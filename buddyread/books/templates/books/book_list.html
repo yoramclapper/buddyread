@@ -3,13 +3,31 @@
 
 {% block content %}
 <div class="card m-5">
-    <div class="card-header">
-        <a class="btn btn-success" href="{% url 'add_book' club=club %}" role="button"><i class="bi bi-book-half"></i> <i class="bi bi-plus-square"></i></a>
-    </div>
+<div class="card-header d-flex align-items-center justify-content-between">
+    <a class="btn btn-success" href="{% url 'add_book' club=club.slug %}" role="button">
+        <i class="bi bi-book-half"></i> <i class="bi bi-plus-square"></i>
+    </a>
+
+    {% if book_clubs|length > 0 %}
+        <div class="dropdown ms-auto">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                {{ club.name }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% for book_club in book_clubs %}
+                    <li><a class="dropdown-item" href="{% url 'books' club=book_club.slug %}">{{ book_club.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <span class="ms-auto">{{ club.name }}</span>
+    {% endif %}
+</div>
+
     <div class="card-body">
         <div class="list-group">
             {% for book in books %}
-            <a href="{% url 'review' book.pk %}" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
+            <a href="{% url 'review' club=club.slug book_pk=book.pk %}" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
                   <h5 class="mb-1">{{ book.title }} ({{ book.selected_by}}'s keuze)</h5>
                   <small>Toegevoegd op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
