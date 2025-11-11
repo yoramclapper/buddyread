@@ -43,7 +43,7 @@ def books(request, club):
     if not book_club_books.exists():
         return redirect("add_book", club=book_club.slug)
 
-    book_qs = book_club_books.first().get_books()
+    book_qs = book_club_books
     context = {"books": book_qs, "club": book_club, "book_clubs": book_clubs}
     return render(request, "books/book_list.html", context)
 
@@ -57,14 +57,14 @@ def add_book(request, club):
         if form.is_valid():
             title = form.cleaned_data['title']
             author = form.cleaned_data['author']
-            book = Book.objects.create(
+            book, created = Book.objects.get_or_create(
                 title=title,
                 author=author,
-                selected_by=request.user,
             )
             BookClubBooks.objects.create(
                 book_club=book_club,
-                book=book
+                book=book,
+                selected_by=request.user,
             )
             return redirect('books', club=book_club.slug)
     else:

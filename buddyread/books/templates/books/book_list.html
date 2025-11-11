@@ -27,17 +27,17 @@
     <div class="card-body">
         <div class="list-group">
             {% for book in books %}
-            <a href="{% url 'review' club=club.slug book_pk=book.pk %}" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
+            <a href="{% url 'review' club=club.slug book_pk=book.book.pk %}" class="list-group-item list-group-item-action mb-3 border {% if forloop.counter == 1 %}active{% endif %}" aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1">{{ book.title }} ({{ book.selected_by}}'s keuze)</h5>
-                  <small>Toegevoegd op {{ book.creation_date|date:"SHORT_DATE_FORMAT"  }}</small>
+                  <h5 class="mb-1">{{ book.book.title }} ({{ book.selected_by}}'s keuze)</h5>
+                  <small>Toegevoegd op {{ book.date_added|date:"SHORT_DATE_FORMAT"  }}</small>
                 </div>
-                <p class="mb-1">{{ book.author }}</p>
-                {% if book.review_set.all %}
+                <p class="mb-1">{{ book.book.author }}</p>
+                {% if book.book.review_set.all %}
                 <div class="mt-2 {% if forloop.counter == 1 %}text-white{% else %}text-muted{% endif %}">
                     <small class="d-block mb-1">Reviews:</small>
                     <div class="ps-2">
-                        {% for review in book.review_set.all %}
+                        {% for review in book.book.review_set.all %}
                             <p class="mb-1 small">
                                 <strong>{{ review.user.username }}</strong>: {{ review.score|stars }}<br>
                                 <span class="fst-italic">{{ review.comment|default:"" }}</span>

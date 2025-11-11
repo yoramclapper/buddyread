@@ -6,8 +6,12 @@ from django.template.defaultfilters import slugify
 class Book(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     author = models.CharField(max_length=255, blank=False, null=False)
-    selected_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
     creation_date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'author'], name='unique_title_author')
+        ]
 
     def __str__(self):
         return self.title
@@ -37,7 +41,9 @@ class Review(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ["user", "book"]
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'book'], name='unique_user_book')
+        ]
 
     def __str__(self):
         return f"{self.book.title} - {self.user.username}"
@@ -68,10 +74,8 @@ class BookClubMembers(models.Model):
 class BookClubBooks(models.Model):
     book_club = models.ForeignKey(BookClub, on_delete=models.CASCADE, blank=False, null=False)
     book = models.ForeignKey(Book, on_delete=models.CASCADE, blank=False, null=False)
+    selected_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    date_added = models.DateField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Book club books"
-
-    def get_books(self):
-        return Book.objects.filter(bookclubbooks__book_club=self.book_club).order_by("-creation_date")
-
