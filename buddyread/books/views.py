@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Prefetch
 from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
 from .forms import BookForm, ReviewForm, BookClubForm
 from .decorators import user_is_club_member
@@ -43,7 +44,14 @@ def books(request, club):
     if not book_club_books.exists():
         return redirect("add_book", club=book_club.slug)
 
-    book_qs = book_club_books
+    book_qs = book_club_books.select_related("book").prefetch_related(
+            Prefetch(
+                "book__review_set",
+                queryset=Review.objects.filter(
+                    user__in=book_club.bookclubmembers_set.values("member")
+                )
+            )
+        )
     context = {"books": book_qs, "club": book_club, "book_clubs": book_clubs}
     return render(request, "books/book_list.html", context)
 
