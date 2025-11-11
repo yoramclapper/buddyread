@@ -13,6 +13,9 @@ class BookForm(forms.ModelForm):
             "author": "Auteur"
         }
 
+    def validate_unique(self):
+        pass
+
     helper = FormHelper()
     helper.add_input(Submit('submit', 'Opslaan', css_class='btn-primary'))
     helper.form_method = 'POST'

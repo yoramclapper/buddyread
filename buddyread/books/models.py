@@ -8,10 +8,10 @@ class Book(models.Model):
     author = models.CharField(max_length=255, blank=False, null=False)
     creation_date = models.DateField(auto_now_add=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['title', 'author'], name='unique_title_author')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=['title', 'author'], name='unique_title_author')
+    #     ]
 
     def __str__(self):
         return self.title
