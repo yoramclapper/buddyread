@@ -1,0 +1,10 @@
+{% extends "core/index.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="card m-5">
+    <div class="card-body">
+        {% crispy form %}
+    </div>
+</div>
+{% endblock %}
