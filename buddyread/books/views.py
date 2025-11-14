@@ -41,8 +41,6 @@ def books(request, club):
         for m in BookClubMembers.objects.filter(member=request.user)
         if m.book_club != book_club
     ]
-    if not book_club_books.exists():
-        return redirect("add_book", club=book_club.slug)
 
     book_qs = book_club_books.select_related("book").prefetch_related(
             Prefetch(

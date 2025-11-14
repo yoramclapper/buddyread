@@ -5,6 +5,7 @@ from core.forms import ChangeAuthForm
 from books.models import BookClubMembers, BookClub
 
 
+@login_required
 def index(request):
     membership_qs = BookClubMembers.objects.filter(member=request.user)
     membership_count = membership_qs.count()
@@ -17,32 +18,20 @@ def index(request):
 
     return redirect("add_club")
 
+@login_required
 def change_auth(request):
     user = request.user
     if request.method == 'POST':
-        form = ChangeAuthForm(request.POST)
+        form = ChangeAuthForm(data=request.POST, user=user)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            current_password = form.cleaned_data['current_password']
+            user.username = form.cleaned_data['username']
             new_password = form.cleaned_data['new_password']
-            new_password_repeat = form.cleaned_data['new_password_repeat']
-
-            if not user.check_password(current_password):
-                form.add_error('current_password', 'Huidig wachtwoord is incorrect')
-
-            elif new_password != new_password_repeat:
-                form.add_error('new_password', 'Het nieuwe wachtwoord en de herhaling komen niet overeen')
-                form.add_error('new_password_repeat', '')
-
-            else:
-                user.username = username
+            if new_password:
                 user.set_password(new_password)
-                user.save()
-                update_session_auth_hash(request, user)
-                return redirect("/")
-
+            user.save()
+            update_session_auth_hash(request, user)
+            return redirect("/")
     else:
-        form = ChangeAuthForm(initial={'username': user.username})
-
+        form = ChangeAuthForm(initial={'username': user.username}, user=user)
     return render(request, 'core/profile.html', {'form': form})
 
