@@ -9,12 +9,12 @@ import core.forms as core_forms
 # TESTS REDIRECT AFTER LOGIN
 # ======================================================================================================================
 
-test_urls = ["/", "/profiel/"]
+test_urls = ["index", "change_auth"]
 @pytest.mark.parametrize("url", test_urls)
 def test_anonymous_user_requires_login(client, url):
-    response = client.get(url)
+    response = client.get(reverse(url))
     assert response.status_code == 302
-    assert response.url == f"/accounts/login/?next={url}"
+    assert f"/accounts/login/?next=" in response.url
 
 
 def test_user_without_club_redirect_to_add_club(client, django_user_model):

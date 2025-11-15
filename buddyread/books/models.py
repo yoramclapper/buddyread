@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.template.defaultfilters import slugify
 
 
@@ -54,6 +55,11 @@ class BookClub(models.Model):
     name = models.CharField(unique=True, max_length=50, null=False, blank=False)
     creation_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(null=True, blank=True)
+
+    def clean(self):
+        super().clean()
+        if BookClub.objects.filter(slug=slugify(self.name)).exists():
+            raise ValidationError(f"Slug already exists for club name: {self.name}")
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
