@@ -49,7 +49,7 @@ def books(request, club):
                     user__in=book_club.bookclubmembers_set.values("member")
                 )
             )
-        )
+        ).order_by('-date_added')
     context = {"books": book_qs, "club": book_club, "book_clubs": book_clubs}
     return render(request, "books/book_list.html", context)
 
