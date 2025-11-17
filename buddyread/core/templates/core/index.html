@@ -29,6 +29,11 @@
                     <li>
                         <a class="dropdown-item" href="{% url 'change_auth' %}">Profiel</a>
                     </li>
+                    {% if user.is_superuser %}
+                    <li>
+                        <a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>
+                    </li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <div>
