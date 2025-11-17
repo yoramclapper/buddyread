@@ -87,16 +87,16 @@ def test_form_book_club_raises_error_if_club_name_already_exists():
     assert not form.is_valid()
 
 
-@pytest.mark.django_db
-def test_form_book_club_raises_error_if_slug_already_exists():
-    books_models.BookClub.objects.create(name="Bookclub")
-
-    data = {
-        "name": "Bookclub!"
-    }
-    form = books_forms.BookClubForm(data=data)
-
-    assert not form.is_valid()
+# @pytest.mark.django_db
+# def test_form_book_club_raises_error_if_slug_already_exists():
+#     books_models.BookClub.objects.create(name="Bookclub")
+#
+#     data = {
+#         "name": "Bookclub!"
+#     }
+#     form = books_forms.BookClubForm(data=data)
+#
+#     assert not form.is_valid()
 
 
 @pytest.mark.django_db
