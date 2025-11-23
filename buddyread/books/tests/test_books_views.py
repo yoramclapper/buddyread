@@ -63,9 +63,11 @@ def test_add_club_is_ok(client, django_user_model):
         pytest.fail(f"Could not find book club {book_club_name}: {exc}")
 
     try:
-        books_models.BookClubMembers.objects.get(book_club=book_club, member=user)
+        member = books_models.BookClubMembers.objects.get(book_club=book_club, member=user)
     except Exception as exc:
         pytest.fail(f"Could not find member '{user.username}' at book club {book_club_name}: {exc}")
+
+    assert member.is_mod
 
     assertRedirects(
         response=response,
@@ -286,3 +288,65 @@ def test_add_review_is_ok(client, django_user_model):
         expected_url=reverse("books", kwargs={"club": book_club.slug}),
         status_code=302
     )
+
+
+# ======================================================================================================================
+# TESTS MODERATE BOOK CLUBS
+# ======================================================================================================================
+
+
+def test_url_to_visit_club_overview_exists():
+    url_name = 'club_overview'
+    try:
+        reverse(url_name)
+    except Exception as exc:
+        pytest.fail(str(exc))
+
+
+def test_visit_club_overview_requires_login(client):
+    url_name = 'club_overview'
+    response = client.get(reverse(url_name))
+    assert response.status_code == 302
+    assert f"/accounts/login/?next=" in response.url
+
+
+@pytest.mark.django_db
+def test_visit_club_overview_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    django_user_model.objects.create_user(username=username, password=password)
+    client.login(username=username, password=password)
+    url_name = 'club_overview'
+
+    response = client.get(reverse(url_name))
+    assert response.status_code == 200
+    assert 'books/club_overview.html' in [t.name for t in response.templates]
+
+
+@pytest.mark.django_db
+def test_club_overview_shows_book_clubs_of_member(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club_1 = books_models.BookClub.objects.create(name="Bookclub 1")
+    books_models.BookClubMembers.objects.create(book_club=book_club_1, member=user)
+    book_club_2 = books_models.BookClub.objects.create(name="Bookclub 2")
+    books_models.BookClubMembers.objects.create(book_club=book_club_2, member=user)
+
+    user_alt = django_user_model.objects.create_user(username="user_alt", password=password)
+    book_club_alt = books_models.BookClub.objects.create(name="Bookclub (alternative)")
+    books_models.BookClubMembers.objects.create(book_club=book_club_alt, member=user_alt)
+
+    client.login(username=username, password=password)
+    url_name = 'club_overview'
+
+    response = client.get(reverse(url_name))
+    context = response.context[-1]
+    assert "book_clubs" in context
+
+    book_clubs_of_user = context["book_clubs"]
+    assert book_clubs_of_user.count() == 2
+
+    book_clubs = [b.book_club for b in book_clubs_of_user]
+    assert book_club_1 in book_clubs
+    assert book_club_2 in book_clubs

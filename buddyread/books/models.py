@@ -72,6 +72,7 @@ class BookClub(models.Model):
 class BookClubMembers(models.Model):
     book_club = models.ForeignKey(BookClub, on_delete=models.CASCADE, blank=False, null=False)
     member = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+    is_mod = models.BooleanField(blank=False, null=False, default=False)
 
     class Meta:
         verbose_name_plural = "Book club members"

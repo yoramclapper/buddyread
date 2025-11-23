@@ -13,7 +13,7 @@ def add_club(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             book_club = BookClub.objects.create(name=name)
-            BookClubMembers.objects.create(book_club=book_club, member=request.user)
+            BookClubMembers.objects.create(book_club=book_club, member=request.user, is_mod=True)
             return redirect("books", club=book_club.slug)
     else:
         form = BookClubForm()
@@ -113,3 +113,9 @@ def review(request, club, book_pk):
             form = ReviewForm(initial=initial_data)
     context = {'book': book, 'form': form}
     return render(request, "books/review_form.html", context)
+
+@login_required
+def club_overview(request):
+    book_clubs = BookClubMembers.objects.filter(member=request.user)
+    context = {'book_clubs': book_clubs}
+    return render(request, "books/club_overview.html", context)
