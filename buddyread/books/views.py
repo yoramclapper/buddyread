@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Prefetch
 from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
 from .forms import BookForm, ReviewForm, BookClubForm
-from .decorators import user_is_club_member
+from .decorators import user_is_club_member, user_is_club_mod
 
 
 @login_required
@@ -119,3 +119,15 @@ def club_overview(request):
     book_clubs = BookClubMembers.objects.filter(member=request.user)
     context = {'book_clubs': book_clubs}
     return render(request, "books/club_overview.html", context)
+
+
+@login_required
+@user_is_club_mod
+def club_custom_admin(request, club):
+    book_club = get_object_or_404(BookClub, slug=club)
+    context = {
+        "book_club": book_club,
+        "members": BookClubMembers.objects.filter(book_club=book_club),
+        "club_books": BookClubBooks.objects.filter(book_club=book_club)
+    }
+    return render(request, "books/club_custom_admin.html", context)

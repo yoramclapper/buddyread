@@ -350,3 +350,123 @@ def test_club_overview_shows_book_clubs_of_member(client, django_user_model):
     book_clubs = [b.book_club for b in book_clubs_of_user]
     assert book_club_1 in book_clubs
     assert book_club_2 in book_clubs
+
+
+@pytest.mark.django_db
+def test_url_to_visit_club_custom_admin_exists():
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'club_custom_admin'
+    try:
+        reverse(url_name, kwargs={"club": book_club.slug})
+    except Exception as exc:
+        pytest.fail(str(exc))
+
+
+@pytest.mark.django_db
+def test_visit_club_custom_admin_requires_login(client):
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'club_custom_admin'
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 302
+    assert f"/accounts/login/?next=" in response.url
+
+
+@pytest.mark.django_db
+def test_visit_club_custom_admin_requires_mod_perm(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=False)
+    url_name = 'club_custom_admin'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_visit_club_custom_admin_as_mod_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'club_custom_admin'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_club_custom_admin_context_contains_book_club(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    member_mod = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=member_mod, is_mod=True)
+
+    url_name = 'club_custom_admin'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+
+    context = response.context[-1]
+    assert "book_club" in context
+    assert context["book_club"] == book_club
+
+
+@pytest.mark.django_db
+def test_club_custom_admin_context_contains_club_members(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    member_mod = django_user_model.objects.create_user(username=username, password=password)
+    member_other = django_user_model.objects.create_user(username="member", password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=member_mod, is_mod=True)
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=member_other, is_mod=False)
+
+    member_alt = django_user_model.objects.create_user(username="member_alt", password=password)
+    book_club_alt = books_models.BookClub.objects.create(name="Bookclub (alternative)")
+    books_models.BookClubMembers.objects.create(book_club=book_club_alt, member=member_alt, is_mod=True)
+
+    url_name = 'club_custom_admin'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+
+    context = response.context[-1]
+    assert "members" in context
+
+    members = [m.member for m in context["members"]]
+    assert len(members) == 2
+    assert member_mod in members
+    assert member_other in members
+
+
+@pytest.mark.django_db
+def test_club_custom_admin_context_contains_club_books(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    book_1 = books_models.Book.objects.create(title="Book 1", author="Author 1")
+    book_2 = books_models.Book.objects.create(title="Book 2", author="Author 2")
+    books_models.BookClubBooks.objects.create(book_club=book_club, book=book_1, selected_by=user)
+    books_models.BookClubBooks.objects.create(book_club=book_club, book=book_2, selected_by=user)
+
+    user_alt = django_user_model.objects.create_user(username="user_alt", password=password)
+    book_club_alt = books_models.BookClub.objects.create(name="Bookclub (alternative)")
+    book_alt = books_models.Book.objects.create(title="Book (alternative)", author="Author (alternative)")
+    books_models.BookClubBooks.objects.create(book_club=book_club_alt, book=book_alt, selected_by=user_alt)
+
+    url_name = 'club_custom_admin'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+
+    context = response.context[-1]
+    assert "club_books" in context
+
+    club_books = [cb.book for cb in context["club_books"]]
+    assert len(club_books) == 2
+    assert book_1 in club_books
+    assert book_2 in club_books
+
