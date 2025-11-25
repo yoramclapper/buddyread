@@ -470,3 +470,94 @@ def test_club_custom_admin_context_contains_club_books(client, django_user_model
     assert book_1 in club_books
     assert book_2 in club_books
 
+
+@pytest.mark.django_db
+def test_url_to_edit_club_exists():
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'edit_club'
+    try:
+        reverse(url_name, kwargs={"club": book_club.slug})
+    except Exception as exc:
+        pytest.fail(str(exc))
+
+
+@pytest.mark.django_db
+def test_edit_club_requires_login(client):
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'edit_club'
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 302
+    assert f"/accounts/login/?next=" in response.url
+
+
+@pytest.mark.django_db
+def test_edit_club_requires_mod_perm(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=False)
+    url_name = 'edit_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_visit_edit_club_as_mod_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'edit_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_edit_club_shows_correct_form_with_initial_data(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'edit_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    context = response.context[-1]
+
+    assert 'form' in context
+
+    form = response.context['form']
+    assert isinstance(form, books_forms.BookClubForm)
+
+    assert 'name' in form.initial
+    assert form.initial['name'] == book_club.name
+
+
+@pytest.mark.django_db
+def test_edit_club_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'edit_club'
+    client.login(username=username, password=password)
+
+    book_club_name_edit = "Bookclub edit"
+    response = client.post(
+        reverse(url_name, kwargs={"club": book_club.slug}),
+        data={"name": book_club_name_edit}
+    )
+
+    book_club = books_models.BookClub.objects.get(pk=book_club.pk)
+    assert book_club.name == book_club_name_edit
+
+    assertRedirects(
+        response=response,
+        expected_url=reverse("books", kwargs={"club": book_club.slug}),
+        status_code=302
+    )

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Prefetch
 from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
@@ -7,18 +8,40 @@ from .decorators import user_is_club_member, user_is_club_mod
 
 
 @login_required
-def add_club(request):
+def add_or_edit_club(request, club=None):
+    book_club = None
+    form_title = "Start een nieuwe boekenclub!"
+
+    if club is not None:
+        book_club = get_object_or_404(BookClub, slug=club)
+        member = get_object_or_404(BookClubMembers, book_club=book_club, member=request.user)
+
+        if not member.is_mod:
+            return HttpResponseForbidden(
+                f"Geen recht om boekenclub '{book_club.name}' te wijzigen"
+            )
+
+        form_title = "Wijzig boekenclub"
+
     if request.method == "POST":
-        form = BookClubForm(request.POST)
+        form = BookClubForm(request.POST, instance=book_club)
         if form.is_valid():
-            name = form.cleaned_data['name']
-            book_club = BookClub.objects.create(name=name)
-            BookClubMembers.objects.create(book_club=book_club, member=request.user, is_mod=True)
+            book_club = form.save()
+
+            if club is None:
+                BookClubMembers.objects.create(
+                    book_club=book_club, member=request.user, is_mod=True
+                )
+
             return redirect("books", club=book_club.slug)
+
     else:
-        form = BookClubForm()
-    context = {'form': form}
-    return render(request, "books/add_club.html", context)
+        form = BookClubForm(instance=book_club)
+
+    return render(request, "books/add_or_edit_club.html", {
+        'form': form,
+        'form_title': form_title
+    })
 
 
 @login_required

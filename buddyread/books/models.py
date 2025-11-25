@@ -56,13 +56,9 @@ class BookClub(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(null=True, blank=True)
 
-    # def clean(self):
-    #     super().clean()
-    #     if BookClub.objects.filter(slug=slugify(self.name)).exists():
-    #         raise ValidationError(f"Slug already exists for club name: {self.name}")
-
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        if not self.slug:
+            self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
