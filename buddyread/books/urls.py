@@ -8,6 +8,7 @@ urlpatterns = [
     path("beheer/", views.club_overview, name="club_overview"),
     path("beheer/<slug:club>/", views.club_custom_admin, name="club_custom_admin"),
     path("beheer/<slug:club>/wijzig/", views.add_or_edit_club, name="edit_club"),
+    path("beheer/<slug:club>/verwijder/", views.delete_club, name="delete_club"),
     path("<slug:club>/", views.books, name="books"),
     path("<slug:club>/add/boek/", views.add_book, name="add_book"),
     path("<slug:club>/review/<int:book_pk>/", views.review, name="review"),

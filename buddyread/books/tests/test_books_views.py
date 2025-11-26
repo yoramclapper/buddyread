@@ -561,3 +561,118 @@ def test_edit_club_is_ok(client, django_user_model):
         expected_url=reverse("books", kwargs={"club": book_club.slug}),
         status_code=302
     )
+
+
+@pytest.mark.django_db
+def test_url_to_delete_club_exists():
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'delete_club'
+    try:
+        reverse(url_name, kwargs={"club": book_club.slug})
+    except Exception as exc:
+        pytest.fail(str(exc))
+
+
+@pytest.mark.django_db
+def test_delete_club_requires_login(client):
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    url_name = 'delete_club'
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 302
+    assert f"/accounts/login/?next=" in response.url
+
+
+@pytest.mark.django_db
+def test_delete_club_requires_mod_perm(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=False)
+    url_name = 'delete_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_visit_delete_club_as_mod_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'delete_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_delete_club_shows_correct_form(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    user = django_user_model.objects.create_user(username=username, password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    books_models.BookClubMembers.objects.create(book_club=book_club, member=user, is_mod=True)
+    url_name = 'delete_club'
+    client.login(username=username, password=password)
+    response = client.get(reverse(url_name, kwargs={"club": book_club.slug}))
+    context = response.context[-1]
+
+    assert 'form' in context
+
+    form = response.context['form']
+    assert isinstance(form, books_forms.ConfirmDeleteForm)
+
+
+@pytest.mark.django_db
+def test_delete_club_is_ok(client, django_user_model):
+    username = 'user'
+    password = 'pwd'
+    member_mod = django_user_model.objects.create_user(username=username, password=password)
+    member_other = django_user_model.objects.create_user(username="member", password=password)
+    book_club = books_models.BookClub.objects.create(name="Bookclub")
+    club_member_mod = books_models.BookClubMembers.objects.create(book_club=book_club, member=member_mod, is_mod=True)
+    club_member = books_models.BookClubMembers.objects.create(book_club=book_club, member=member_other, is_mod=False)
+    book_1 = books_models.Book.objects.create(title="Book 1", author="Author 1")
+    book_2 = books_models.Book.objects.create(title="Book 2", author="Author 2")
+    club_book_1 = books_models.BookClubBooks.objects.create(book_club=book_club, book=book_1, selected_by=member_mod)
+    club_book_2 = books_models.BookClubBooks.objects.create(book_club=book_club, book=book_2, selected_by=member_other)
+
+    member_alt = django_user_model.objects.create_user(username="member_alt", password=password)
+    book_club_alt = books_models.BookClub.objects.create(name="Bookclub (alternative)")
+    club_member_alt = books_models.BookClubMembers.objects.create(book_club=book_club_alt, member=member_alt, is_mod=True)
+    book_alt = books_models.Book.objects.create(title="Book (alternative)", author="Author (alternative)")
+    club_book_alt = books_models.BookClubBooks.objects.create(book_club=book_club_alt, book=book_alt, selected_by=member_alt)
+
+    url_name = 'delete_club'
+    client.login(username=username, password=password)
+
+    response = client.post(
+        reverse(url_name, kwargs={"club": book_club.slug}),
+        data={"confirm": True}
+    )
+
+    assert not books_models.BookClub.objects.filter(pk=book_club.pk).exists()
+
+    assert django_user_model.objects.filter(pk=member_mod.pk).exists()
+    assert django_user_model.objects.filter(pk=member_other.pk).exists()
+    assert not books_models.BookClubMembers.objects.filter(pk=club_member_mod.pk).exists()
+    assert not books_models.BookClubMembers.objects.filter(pk=club_member.pk).exists()
+
+    assert books_models.Book.objects.filter(pk=book_1.pk).exists()
+    assert books_models.Book.objects.filter(pk=book_2.pk).exists()
+    assert not books_models.BookClubBooks.objects.filter(pk=club_book_1.pk).exists()
+    assert not books_models.BookClubBooks.objects.filter(pk=club_book_2.pk).exists()
+
+    assert books_models.BookClubMembers.objects.filter(pk=club_member_alt.pk).exists()
+    assert books_models.BookClub.objects.filter(pk=book_club_alt.pk).exists()
+    assert books_models.Book.objects.filter(pk=book_alt.pk).exists()
+    assert books_models.BookClubBooks.objects.filter(pk=club_book_alt.pk).exists()
+
+    assertRedirects(
+        response=response,
+        expected_url=reverse("club_overview"),
+        status_code=302
+    )

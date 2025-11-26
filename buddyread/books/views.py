@@ -3,14 +3,14 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Prefetch
 from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
-from .forms import BookForm, ReviewForm, BookClubForm
+from .forms import BookForm, ReviewForm, BookClubForm, ConfirmDeleteForm
 from .decorators import user_is_club_member, user_is_club_mod
 
 
 @login_required
 def add_or_edit_club(request, club=None):
     book_club = None
-    form_title = "Start een nieuwe boekenclub!"
+    form_caption = "Start een nieuwe boekenclub!"
 
     if club is not None:
         book_club = get_object_or_404(BookClub, slug=club)
@@ -21,7 +21,7 @@ def add_or_edit_club(request, club=None):
                 f"Geen recht om boekenclub '{book_club.name}' te wijzigen"
             )
 
-        form_title = "Wijzig boekenclub"
+        form_caption = "Wijzig boekenclub"
 
     if request.method == "POST":
         form = BookClubForm(request.POST, instance=book_club)
@@ -38,10 +38,28 @@ def add_or_edit_club(request, club=None):
     else:
         form = BookClubForm(instance=book_club)
 
-    return render(request, "books/add_or_edit_club.html", {
+    return render(request, "books/generic_form.html", {
         'form': form,
-        'form_title': form_title
+        'form_caption': form_caption
     })
+
+
+@login_required
+@user_is_club_mod
+def delete_club(request, club):
+    book_club = get_object_or_404(BookClub, slug=club)
+    if request.method == "POST":
+        form = ConfirmDeleteForm(request.POST)
+        if form.is_valid():
+            book_club.delete()
+            return redirect('club_overview')
+    else:
+        form = ConfirmDeleteForm()
+    context = {
+        'form': form,
+        'form_caption': f"Verwijder boekenclub '{book_club.name}' en alle gerelateerde gegevens",
+    }
+    return render(request, "books/generic_form.html", context)
 
 
 @login_required
@@ -98,8 +116,12 @@ def add_book(request, club):
             return redirect('books', club=book_club.slug)
     else:
         form = BookForm()
-    context = {'form': form, 'club': book_club.name}
-    return render(request, "books/add_book.html", context)
+    context = {
+        'form': form,
+        'form_caption': f"Voeg een boek toe aan {book_club.name}",
+        'club': book_club.name
+    }
+    return render(request, "books/generic_form.html", context)
 
 
 @login_required

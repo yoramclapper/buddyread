@@ -10,9 +10,9 @@
             <a href="{% url 'edit_club' club=book_club.slug%}" type="button" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-pencil"></i>
             </a>
-            <button type="button" class="btn btn-outline-danger btn-sm">
+            <a href="{% url 'delete_club' club=book_club.slug%}" type="button" class="btn btn-outline-danger btn-sm">
                 <i class="bi bi-trash"></i>
-            </button>
+            </a>
         </div>
     </div>
 

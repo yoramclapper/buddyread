@@ -43,3 +43,14 @@ class BookClubForm(forms.ModelForm):
     helper = FormHelper()
     helper.add_input(Submit('submit', 'Opslaan', css_class='btn-primary'))
     helper.form_method = 'POST'
+
+
+class ConfirmDeleteForm(forms.Form):
+    confirm = forms.BooleanField(
+        required=True,
+        label="Ik bevestig dat het bovenstaande onderdeel wordt verwijderd."
+    )
+
+    helper = FormHelper()
+    helper.add_input(Submit('submit', 'Verwijder', css_class='btn-danger'))
+    helper.form_method = 'POST'
