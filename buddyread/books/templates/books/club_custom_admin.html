@@ -69,9 +69,9 @@
                                     <div>
                                         {{ b.book.title }}, {{ b.book.author }}
                                     </div>
-                                    <button type="button" class="btn btn-outline-danger btn-sm">
+                                    <a href="{% url 'delete_club_book' club=book_club.slug book_pk=b.pk %}" type="button" class="btn btn-outline-danger btn-sm">
                                         <i class="bi bi-trash"></i>
-                                    </button>
+                                    </a>
                                 </li>
                                 {% endfor %}
                             </ul>

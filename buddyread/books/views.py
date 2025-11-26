@@ -197,3 +197,22 @@ def delete_club_member(request, club, member_pk):
         'form_caption': f"Verwijder lid '{club_member.member.username}' en alle gerelateerde gegevens uit '{book_club.name}'",
     }
     return render(request, "books/generic_form.html", context)
+
+
+@login_required
+@user_is_club_mod
+def delete_club_book(request, club, book_pk):
+    book_club = get_object_or_404(BookClub, slug=club)
+    club_book = get_object_or_404(BookClubBooks, book_club=book_club, pk=book_pk)
+    if request.method == "POST":
+        form = ConfirmDeleteForm(request.POST)
+        if form.is_valid():
+            club_book.delete()
+            return redirect("club_custom_admin", club=book_club.slug)
+    else:
+        form = ConfirmDeleteForm()
+    context = {
+        'form': form,
+        'form_caption': f"Verwijder boek '{club_book.book.title}' en alle gerelateerde gegevens uit '{book_club.name}'",
+    }
+    return render(request, "books/generic_form.html", context)
