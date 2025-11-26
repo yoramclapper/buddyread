@@ -54,3 +54,14 @@ class ConfirmDeleteForm(forms.Form):
     helper = FormHelper()
     helper.add_input(Submit('submit', 'Verwijder', css_class='btn-danger'))
     helper.form_method = 'POST'
+
+
+class ConfirmModeratorForm(forms.Form):
+    confirm = forms.BooleanField(
+        required=True,
+        label="Ik bevestig dat bovenstaande lid beheerrechten krijgt."
+    )
+
+    helper = FormHelper()
+    helper.add_input(Submit('submit', 'Opslaan', css_class='btn-primary'))
+    helper.form_method = 'POST'

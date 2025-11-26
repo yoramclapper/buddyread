@@ -37,9 +37,9 @@
                                         {% endif %}
                                     </div>
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-outline-primary btn-sm">
+                                        <a href="{% url 'grant_mod_perm' club=book_club.slug member_pk=m.pk %}" type="button" class="btn btn-outline-primary btn-sm">
                                             <i class="bi bi-person-gear"></i>
-                                        </button>
+                                        </a>
                                         <a href="{% url 'delete_club_member' club=book_club.slug member_pk=m.pk %}" type="button" class="btn btn-outline-danger btn-sm">
                                             <i class="bi bi-trash"></i>
                                         </a>

@@ -3,7 +3,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Prefetch
 from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
-from .forms import BookForm, ReviewForm, BookClubForm, ConfirmDeleteForm
+from .forms import BookForm, ReviewForm, BookClubForm, ConfirmDeleteForm, ConfirmModeratorForm
 from .decorators import user_is_club_member, user_is_club_mod
 
 
@@ -189,7 +189,7 @@ def delete_club_member(request, club, member_pk):
             club_member.delete()
             return redirect("club_custom_admin", club=book_club.slug)
     else:
-        if request.user == club_member.member:
+        if club_member.is_mod:
             return redirect("club_custom_admin", club=book_club.slug)
         form = ConfirmDeleteForm()
     context = {
@@ -214,5 +214,27 @@ def delete_club_book(request, club, book_pk):
     context = {
         'form': form,
         'form_caption': f"Verwijder boek '{club_book.book.title}' en alle gerelateerde gegevens uit '{book_club.name}'",
+    }
+    return render(request, "books/generic_form.html", context)
+
+
+@login_required
+@user_is_club_mod
+def grant_mod_perm(request, club, member_pk):
+    book_club = get_object_or_404(BookClub, slug=club)
+    club_member = get_object_or_404(BookClubMembers, book_club=book_club, pk=member_pk)
+    if request.method == "POST":
+        form = ConfirmModeratorForm(request.POST)
+        if form.is_valid():
+            club_member.is_mod = True
+            club_member.save()
+            return redirect("club_custom_admin", club=book_club.slug)
+    else:
+        if club_member.is_mod:
+            return redirect("club_custom_admin", club=book_club.slug)
+        form = ConfirmModeratorForm()
+    context = {
+        'form': form,
+        'form_caption': f"Geef het lid '{club_member.member.username}' recht om '{book_club.name}' te beheren",
     }
     return render(request, "books/generic_form.html", context)
