@@ -176,3 +176,24 @@ def club_custom_admin(request, club):
         "club_books": BookClubBooks.objects.filter(book_club=book_club)
     }
     return render(request, "books/club_custom_admin.html", context)
+
+
+@login_required
+@user_is_club_mod
+def delete_club_member(request, club, member_pk):
+    book_club = get_object_or_404(BookClub, slug=club)
+    club_member = get_object_or_404(BookClubMembers, book_club=book_club, pk=member_pk)
+    if request.method == "POST":
+        form = ConfirmDeleteForm(request.POST)
+        if form.is_valid():
+            club_member.delete()
+            return redirect("club_custom_admin", club=book_club.slug)
+    else:
+        if request.user == club_member.member:
+            return redirect("club_custom_admin", club=book_club.slug)
+        form = ConfirmDeleteForm()
+    context = {
+        'form': form,
+        'form_caption': f"Verwijder lid '{club_member.member.username}' en alle gerelateerde gegevens uit '{book_club.name}'",
+    }
+    return render(request, "books/generic_form.html", context)
