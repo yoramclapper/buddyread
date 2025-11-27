@@ -1,0 +1,32 @@
+{% extends "core/index.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-center">
+    <div class="card m-5 w-50">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            Mijn boekenclubs
+            <a class="btn btn-success" href="{% url 'add_club' %}" role="button">
+                <i class="bi bi-journal-plus"></i>
+            </a>
+        </div>
+
+        <div class="card-body">
+            <div class="list-group">
+                {% for club in book_clubs %}
+                {% if club.is_mod %}
+                <a href="{% url 'club_custom_admin' club=club.book_club.slug %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    {{ club.book_club.name }}
+                    <span class="badge bg-info rounded-pill">Beheerder</span>
+                </a>
+                {% else %}
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    {{ club.book_club.name }}
+                    <span class="badge bg-info rounded-pill">Lid</span>
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

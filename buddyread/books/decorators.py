@@ -16,3 +16,25 @@ def user_is_club_member(view_func):
             return HttpResponseForbidden("Toegang geweigerd voor de geselecteerde boeken club")
         return view_func(request, club, *args, **kwargs)
     return wrap
+
+
+def user_is_club_mod(view_func):
+    @wraps(view_func)
+    def wrap(request, club, *args, **kwargs):
+        book_club = get_object_or_404(BookClub, slug=club)
+        member = request.user
+        book_club_members_qs = BookClubMembers.objects.filter(
+            book_club=book_club,
+            member=member
+        )
+
+        if not book_club_members_qs.exists():
+            return HttpResponseForbidden("Toegang geweigerd voor de geselecteerde boeken club")
+        book_club = book_club_members_qs.first()
+
+        if not book_club.is_mod:
+            return HttpResponseForbidden("Toegang geweigerd voor de geselecteerde boeken club")
+
+        return view_func(request, club, *args, **kwargs)
+
+    return wrap
