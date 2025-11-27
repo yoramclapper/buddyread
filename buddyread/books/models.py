@@ -1,18 +1,16 @@
+from datetime import datetime, timedelta
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 
 
 class Book(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     author = models.CharField(max_length=255, blank=False, null=False)
     creation_date = models.DateField(auto_now_add=True)
-
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(fields=['title', 'author'], name='unique_title_author')
-    #     ]
 
     def __str__(self):
         return self.title
@@ -82,3 +80,15 @@ class BookClubBooks(models.Model):
 
     class Meta:
         verbose_name_plural = "Book club books"
+
+
+class InviteURL(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(blank=False, null=False, default=False)
+    book_club = models.ForeignKey(BookClub, on_delete=models.CASCADE, blank=False, null=False)
+
+
+    def is_expired(self):
+        expiration_time = self.creation_date + timedelta(days=1)
+        return timezone.now() >= expiration_time

@@ -1,9 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.db.models import Prefetch
-from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks
-from .forms import BookForm, ReviewForm, BookClubForm, ConfirmDeleteForm, ConfirmModeratorForm
+from .models import Book, Review, BookClub, BookClubMembers, BookClubBooks, InviteURL
+from .forms import BookForm, ReviewForm, BookClubForm, ConfirmDeleteForm, ConfirmModeratorForm, InviteMemberForm
 from .decorators import user_is_club_member, user_is_club_mod
 
 
@@ -236,5 +238,46 @@ def grant_mod_perm(request, club, member_pk):
     context = {
         'form': form,
         'form_caption': f"Geef het lid '{club_member.member.username}' recht om '{book_club.name}' te beheren",
+    }
+    return render(request, "books/generic_form.html", context)
+
+
+@login_required
+@user_is_club_mod
+def invite_member(request, club):
+    book_club = get_object_or_404(BookClub, slug=club)
+    invite_url = InviteURL.objects.create(book_club=book_club)
+    url = reverse('sign_up', kwargs={'url_uuid': invite_url.uuid})
+    context = {
+        'book_club': book_club,
+        'invite_url': request.build_absolute_uri(url)
+    }
+    return render(request, "books/invite_member.html", context)
+
+
+def sign_up(request, url_uuid):
+    invite_url = InviteURL.objects.get(uuid=url_uuid)
+    book_club = get_object_or_404(BookClub, slug=invite_url.book_club.slug)
+
+    if invite_url.accepted or invite_url.is_expired():
+        return HttpResponseForbidden("Uitnodiging is verlopen")
+
+    if request.method == "POST":
+        form = InviteMemberForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            new_user = get_user_model().objects.create_user(username=username, password=password)
+            BookClubMembers.objects.create(book_club=book_club, member=new_user)
+            invite_url.accepted=True
+            invite_url.save()
+            return redirect("index")
+
+    else:
+        form = InviteMemberForm()
+
+    context = {
+        'form': form,
+        'form_caption': f"Wordt lid bij boekenclub: {book_club.name}",
     }
     return render(request, "books/generic_form.html", context)

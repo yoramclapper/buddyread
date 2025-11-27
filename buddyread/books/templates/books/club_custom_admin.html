@@ -47,9 +47,9 @@
                                 </li>
                                 {% endfor %}
                                 <li class="list-group-item">
-                                    <button type="button" class="btn btn-outline-success">
+                                    <a href="{% url 'invite_member' club=book_club.slug %}" type="button" class="btn btn-outline-success">
                                         <i class="bi bi-person-add"></i> Lid uitnodigen
-                                    </button>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
